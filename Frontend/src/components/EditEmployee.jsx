@@ -1,18 +1,37 @@
 import React from "react";
 import axios from "axios";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
-const AddEmployee = () => {
+const EditEmployee = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    role: "",
     department: "",
+    role: "",
   });
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
+
+  const fetchEmployee = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/employees/${id}`
+      );
+      setFormData(response.data.employees);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching employee", error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployee();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,28 +43,35 @@ const AddEmployee = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/employees/create",
+      await axios.patch(
+        `http://localhost:5000/api/employees/update/${id}`,
         formData
       );
-
-      console.log("Employee Added Successfully", response.data);
+      alert("Employee updated successfully!");
       navigate("/");
     } catch (error) {
-      console.error("Error submitting form data", error);
+      console.error("Error updating employee", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6 font-rajdhani">
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
-          <h2 className="text-2xl font-bold">Add New Employee</h2>
-          <p className="text-blue-100">
-            Fill in the details to add an employee
-          </p>
+          <h2 className="text-2xl font-bold">Edit Employee</h2>
+          <p className="text-blue-100">Update employee information</p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -60,11 +86,10 @@ const AddEmployee = () => {
               <input
                 type="text"
                 name="name"
-                placeholder="Akeel Aslam"
                 value={formData.name}
                 onChange={handleChange}
+                placeholder="Name"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300"
-                required
               />
             </div>
 
@@ -78,11 +103,10 @@ const AddEmployee = () => {
               <input
                 type="email"
                 name="email"
-                placeholder="akeel.se@example.com"
                 value={formData.email}
                 onChange={handleChange}
+                placeholder="Email"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300"
-                required
               />
             </div>
 
@@ -96,11 +120,10 @@ const AddEmployee = () => {
               <input
                 type="number"
                 name="phone"
-                placeholder="1234567890"
                 value={formData.phone}
                 onChange={handleChange}
+                placeholder="Phone"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300"
-                required
               />
             </div>
 
@@ -114,11 +137,10 @@ const AddEmployee = () => {
               <input
                 type="text"
                 name="department"
-                placeholder="Engineering"
                 value={formData.department}
                 onChange={handleChange}
+                placeholder="Department"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300"
-                required
               />
             </div>
 
@@ -132,11 +154,10 @@ const AddEmployee = () => {
               <input
                 type="text"
                 name="role"
-                placeholder="Software Developer"
                 value={formData.role}
                 onChange={handleChange}
+                placeholder="Role"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300"
-                required
               />
             </div>
           </div>
@@ -176,7 +197,7 @@ const AddEmployee = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Adding...
+                  Updating...
                 </>
               ) : (
                 <>
@@ -188,11 +209,11 @@ const AddEmployee = () => {
                   >
                     <path
                       fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                       clipRule="evenodd"
                     />
                   </svg>
-                  Add Employee
+                  Update Employee
                 </>
               )}
             </button>
@@ -203,4 +224,4 @@ const AddEmployee = () => {
   );
 };
 
-export default AddEmployee;
+export default EditEmployee;

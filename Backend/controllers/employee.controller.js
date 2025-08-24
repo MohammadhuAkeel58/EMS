@@ -14,6 +14,22 @@ export const getEmployees = async (req, res) => {
   }
 };
 
+export const getEmployeeById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const employees = await Employee.findById(id);
+    if (!employees) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+    res.status(200).json({ employees });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 export const createEmployee = async (req, res) => {
   const employee = new Employee({
     name: req.body.name,
